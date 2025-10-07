@@ -1,0 +1,57 @@
+{
+  "name": "shrinkmytesla",
+  "version": "0.1.0",
+  "description": "Shrink and manage TeslaCam/Sentry videos (Electron + FFmpeg)",
+  "author": "Your Name",
+  "license": "UNLICENSED",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.13",
+    "electron-store": "^8.2.0",
+    "fast-glob": "^3.3.2",
+    "filesize": "^10.1.2"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^2.1.3"
+  },
+  "build": {
+    "appId": "com.yourname.shrinkmytesla",
+    "productName": "ShrinkMyTesla",
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/@ffmpeg-installer/ffmpeg/",
+        "to": "ffmpeg"
+      },
+      {
+        "from": "node_modules/@ffprobe-installer/ffprobe/",
+        "to": "ffprobe"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
+  }
+}

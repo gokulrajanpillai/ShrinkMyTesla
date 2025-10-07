@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>ShrinkMyTesla</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <h1>ShrinkMyTesla</h1>
+    <button id="pickSource">Select TeslaCam Folder</button>
+    <button id="scan">Scan & List</button>
+    <button id="pickOutput">Select Output Folder</button>
+
+    <div class="block">
+      <label>Quality</label>
+      <select id="quality">
+        <option value="hd">HD (720p)</option>
+        <option value="sd">SD (480p)</option>
+      </select>
+    </div>
+
+    <div class="block">
+      <label><input type="checkbox" id="overwrite" /> Overwrite if exists</label>
+      <label><input type="checkbox" id="deleteOriginals" /> Delete originals (dangerous)</label>
+    </div>
+
+    <button id="shrink">Shrink Selected</button>
+    <div id="status"></div>
+  </aside>
+
+  <main class="main">
+    <h3>Videos</h3>
+    <div id="list"></div>
+  </main>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
