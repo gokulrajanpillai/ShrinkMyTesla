@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from tqdm import tqdm
 import shutil
+import concurrent.futures
 
 TESLA_FOLDER_NAMES = ['TeslaCam', 'TeslaCam/RecentClips', 'TeslaCam/SavedClips', 'TeslaCam/SentryClips']
 
@@ -26,9 +27,26 @@ def downscale_video(input_path, output_path):
         '-c:a', 'copy',
         str(output_path)
     ]
-    print("Downscaling video ...")
-    print(cmd)
+    print(f"Downscaling video: {input_path}")
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
+def compress_and_replace(args):
+    video, drive_path, backup_dir = args
+    relative_path = video.relative_to(drive_path)
+    backup_path = backup_dir / relative_path
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if backup_path.exists():
+        print(f"Skipping (already backed up): {relative_path}")
+        return
+
+    shutil.move(str(video), str(backup_path))
+
+    try:
+        downscale_video(backup_path, video)
+    except subprocess.CalledProcessError:
+        print(f"Failed to convert {relative_path}, restoring original.")
+        shutil.move(str(backup_path), str(video))
 
 def process_videos(drive_path, backup_dir):
     drive_path = Path(drive_path)
@@ -40,27 +58,11 @@ def process_videos(drive_path, backup_dir):
         print("No Tesla videos found.")
         return
 
-    print(f"Found {len(videos)} video(s). Starting conversion...")
+    print(f"Found {len(videos)} video(s). Starting parallel conversion...")
 
-    for video in tqdm(videos):
-        relative_path = video.relative_to(drive_path)
-        backup_path = backup_dir / relative_path
-        backup_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Skip if already backed up (optional)
-        if backup_path.exists():
-            print(f"Skipping (already backed up): {relative_path}")
-            continue
-
-        # Step 1: Move original to backup
-        shutil.move(str(video), str(backup_path))
-
-        # Step 2: Convert backup to HD and replace original path
-        try:
-            downscale_video(backup_path, video)
-        except subprocess.CalledProcessError:
-            print(f"Failed to convert {relative_path}, restoring original.")
-            shutil.move(str(backup_path), str(video))  # Restore original if conversion fails
+    args_list = [(video, drive_path, backup_dir) for video in videos]
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        list(tqdm(executor.map(compress_and_replace, args_list), total=len(videos)))
 
 def main():
     parser = argparse.ArgumentParser(description="TeslaCam Video Downscaler to YouTube HD (720p) with Backup")
