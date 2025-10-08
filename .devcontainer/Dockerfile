@@ -41,7 +41,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 # --------------------------------------------------------------------
 ## Copy your requirements to pip dependencies
 ##COPY requirements.txt /tmp/requirements.txt
-##RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install --no-cache-dir  ffmpeg-python tqdm imageio-ffmpeg
 
 # --------------------------------------------------------------------
 # ⚙️ Node dependencies
