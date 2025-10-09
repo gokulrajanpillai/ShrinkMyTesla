@@ -20,4 +20,21 @@ No uploads, no accounts, no data leaves your drive.
 
 ### 🪄 Example use (CLI)
 ```bash
-shrinkmytesla --source /Volumes/TESLADRIVE/TeslaCam --delete-originals --preset balanced
+python shrink_my_tesla_cli.py --drive-path /Volumes/TESLADRIVE --backup-dir "$HOME/TeslaBackups"
+```
+
+CLI (Python) quick start
+- Prereqs: Python 3.8+ and ffmpeg installed (on PATH), or set `FFMPEG_PATH` to your ffmpeg binary
+- Install deps:
+	```bash
+	pip install -r requirements.txt
+	```
+- Linux example:
+	```bash
+	python shrink_my_tesla_cli.py --drive-path /media/$USER/TESLACAM --backup-dir "$HOME/TeslaBackups"
+	```
+- Windows (PowerShell):
+	```powershell
+	python .\shrink_my_tesla_cli.py --drive-path E:\ --backup-dir D:\TeslaBackups
+	```
+- Note: Scans TeslaCam/RecentClips, SavedClips, SentryClips; moves originals to the backup dir and writes 720p H.264 files back in place.

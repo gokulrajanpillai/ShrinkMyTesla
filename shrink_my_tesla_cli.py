@@ -16,8 +16,16 @@ def find_tesla_videos(drive_path):
     return video_files
 
 def downscale_video(input_path, output_path):
+    """ffmpeg resolution/quality settings:
+    - scale: 1280x720 (YouTube HD)
+    - codec: H.264 (libx264)
+    - crf: 28 (lower = better quality, bigger files)
+    - preset: slower (better compression)
+    """
+
+    ffmpeg_path = os.environ.get('FFMPEG_PATH', 'ffmpeg')
     cmd = [
-        r'C:\ffmpeg-8.0-essentials_build\bin\ffmpeg.exe',
+        ffmpeg_path,
         '-i', str(input_path),
         '-vf', 'scale=1280:720',
         '-c:v', 'libx264',
@@ -27,8 +35,12 @@ def downscale_video(input_path, output_path):
         str(output_path)
     ]
     print("Downscaling video ...")
-    print(cmd)
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    try:
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    except FileNotFoundError:
+        raise RuntimeError(
+            "ffmpeg not found. Install ffmpeg and ensure it's on PATH, or set FFMPEG_PATH to the ffmpeg binary."
+        )
 
 def process_videos(drive_path, backup_dir):
     drive_path = Path(drive_path)
@@ -63,9 +75,21 @@ def process_videos(drive_path, backup_dir):
             shutil.move(str(backup_path), str(video))  # Restore original if conversion fails
 
 def main():
-    parser = argparse.ArgumentParser(description="TeslaCam Video Downscaler to YouTube HD (720p) with Backup")
-    parser.add_argument('--drive-path', type=str, help="Path to Tesla USB drive (e.g., /media/user/TESLACAM)")
-    parser.add_argument('--backup-dir', type=str, help="Directory to move original videos before replacing with HD versions")
+    parser = argparse.ArgumentParser(
+        description="TeslaCam Video Downscaler to YouTube HD (720p) with Backup"
+    )
+    parser.add_argument(
+        '--drive-path',
+        type=str,
+        required=True,
+        help="Path to Tesla USB drive root (contains TeslaCam folder), e.g., /media/$USER/TESLACAM"
+    )
+    parser.add_argument(
+        '--backup-dir',
+        type=str,
+        required=True,
+        help="Directory where original videos are moved before replacing with downscaled versions"
+    )
     args = parser.parse_args()
 
     process_videos(args.drive_path, args.backup_dir)
