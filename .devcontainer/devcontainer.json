@@ -1,0 +1,22 @@
+{
+  "name": "ShrinkMyTesla (Ubuntu 22.04)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "postCreateCommand": "echo 'Todo: npm ci && pip install -r requirements.txt || true'",
+  "remoteUser": "vscode"
+}
