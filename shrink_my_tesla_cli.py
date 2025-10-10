@@ -116,11 +116,12 @@ def main():
     description = (
         "Shrink My Tesla — safely shrink TeslaCam videos by downscaling them to a"
         " smaller resolution (default 720p) to save space, while keeping a full"
-        " backup of originals in a separate folder."
+        " backup of originals in a separate folder. Use -p/--drive-path and -b/--backup-dir."
     )
 
     epilog = (
         "Examples:\n"
+        "  python shrink_my_tesla_cli.py -p /Volumes/TESLACAM -b ~/Backups/TeslaCam\n"
         "  python shrink_my_tesla_cli.py --drive-path /Volumes/TESLACAM \\\n+    --backup-dir ~/Backups/TeslaCam\n\n"
         "Notes:\n"
         "- Originals are moved to the backup folder first, then converted back into\n"
@@ -133,8 +134,8 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
-    parser.add_argument('--drive-path', required=True, help="Path to Tesla USB drive (e.g., /media/user/TESLACAM)")
-    parser.add_argument('--backup-dir', required=True, help="Directory to move original videos before replacing with HD versions")
+    parser.add_argument('-p', '--drive-path', required=True, help="Path to Tesla USB drive (e.g., /media/user/TESLACAM)")
+    parser.add_argument('-b', '--backup-dir', required=True, help="Directory to move original videos before replacing with HD versions")
     args = parser.parse_args()
 
     process_videos(args.drive_path, args.backup_dir)
