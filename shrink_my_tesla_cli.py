@@ -3,7 +3,6 @@ import argparse
 from pathlib import Path
 from tqdm import tqdm
 import shutil
-import ffmpeg  # Pythonic wrapper for FFmpeg
 
 TESLA_FOLDER_NAMES = [
     'TeslaCam',
@@ -26,6 +25,8 @@ def downscale_video(input_path, output_path):
     """Downscale video to 720p using ffmpeg-python (no external exe path)."""
     print("Downscaling video ...")
     try:
+        # Lazy import to avoid requiring ffmpeg for --help
+        import ffmpeg
         (
             ffmpeg
             .input(str(input_path))
@@ -83,9 +84,26 @@ def process_videos(drive_path, backup_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="TeslaCam Video Downscaler to YouTube HD (720p) with Backup"
+    description = (
+        "Shrink My Tesla — safely shrink TeslaCam videos by downscaling them to a"
+        " smaller resolution (default 720p) to save space, while keeping a full"
+        " backup of originals in a separate folder."
     )
+
+    epilog = (
+        "Examples:\n"
+        "  python shrink_my_tesla_cli.py --drive-path /Volumes/TESLACAM \\\n+    --backup-dir ~/Backups/TeslaCam\n\n"
+        "Notes:\n"
+        "- Originals are moved to the backup folder first, then converted back into\n"
+        "  the original locations. If anything fails, the original file is restored.\n"
+    )
+
+    parser = argparse.ArgumentParser(
+        description=description,
+        epilog=epilog,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+
     parser.add_argument('--drive-path', required=True, help="Path to Tesla USB drive (e.g., /media/user/TESLACAM)")
     parser.add_argument('--backup-dir', required=True, help="Directory to move original videos before replacing with HD versions")
     args = parser.parse_args()
