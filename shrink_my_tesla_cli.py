@@ -6,6 +6,7 @@ try:
 except Exception:
     tqdm = None  # type: ignore
 import shutil
+import concurrent.futures
 
 TESLA_FOLDER_NAMES = [
     'TeslaCam',
@@ -25,31 +26,36 @@ def find_tesla_videos(drive_path):
 
 
 def downscale_video(input_path, output_path):
-    """Downscale video to 720p using ffmpeg-python (no external exe path)."""
-    try:
-        # Lazy import to avoid requiring ffmpeg for --help
-        import ffmpeg
-        (
-            ffmpeg
-            .input(str(input_path))
-            .output(
-                str(output_path),
-                vf='scale=1280:720',
-                vcodec='libx264',
-                crf=28,
-                preset='slower',
-                acodec='copy'
-            )
-            .run(
-                capture_stdout=True,
-                capture_stderr=True,
-                overwrite_output=True
-            )
-        )
-    except ffmpeg.Error as e:
-        print(f"Error processing {input_path}: {e.stderr.decode() if e.stderr else e}")
-        raise
+    cmd = [
+        r'C:\ffmpeg-8.0-essentials_build\bin\ffmpeg.exe',
+        '-i', str(input_path),
+        '-vf', 'scale=1280:720',
+        '-c:v', 'libx264',
+        '-crf', '28',
+        '-preset', 'slower',
+        '-c:a', 'copy',
+        str(output_path)
+    ]
+    print(f"Downscaling video: {input_path}")
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
+def compress_and_replace(args):
+    video, drive_path, backup_dir = args
+    relative_path = video.relative_to(drive_path)
+    backup_path = backup_dir / relative_path
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if backup_path.exists():
+        print(f"Skipping (already backed up): {relative_path}")
+        return
+
+    shutil.move(str(video), str(backup_path))
+
+    try:
+        downscale_video(backup_path, video)
+    except subprocess.CalledProcessError:
+        print(f"Failed to convert {relative_path}, restoring original.")
+        shutil.move(str(backup_path), str(video))
 
 def process_videos(drive_path, backup_dir):
     """Process all Tesla videos, back them up, and replace with downscaled versions."""
@@ -62,54 +68,11 @@ def process_videos(drive_path, backup_dir):
         print("No Tesla videos found.")
         return
 
-    total = len(videos)
-    print(f"Found {total} video(s). Starting conversion...")
+    print(f"Found {len(videos)} video(s). Starting parallel conversion...")
 
-    # Choose progress iterator
-    if tqdm:
-        iterator = tqdm(videos, total=total, unit="video", desc="Converting", dynamic_ncols=True, leave=True)
-    else:
-        iterator = enumerate(videos, start=1)
-
-    for item in iterator:
-        if tqdm:
-            video = item
-            idx = None
-        else:
-            idx, video = item
-        relative_path = video.relative_to(drive_path)
-        backup_path = backup_dir / relative_path
-        backup_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Skip if already backed up (optional)
-        if backup_path.exists():
-            if idx is not None:
-                print(f"[{idx}/{total}] Skipping (already backed up): {relative_path}")
-            else:
-                # Keep the bar concise and print the full message on a new line
-                iterator.set_postfix_str("skip", refresh=True)
-                tqdm.write(f"skip: {relative_path}")
-            continue
-
-        # Step 1: Move original to backup
-        if idx is not None:
-            print(f"[{idx}/{total}] Backing up: {relative_path}")
-        else:
-            iterator.set_postfix_str("backup", refresh=True)
-            tqdm.write(f"backup: {relative_path}")
-        shutil.move(str(video), str(backup_path))
-
-        # Step 2: Convert backup to HD and replace original path
-        try:
-            if idx is not None:
-                print(f"[{idx}/{total}] Converting to HD: {relative_path}")
-            else:
-                iterator.set_postfix_str("convert", refresh=True)
-                tqdm.write(f"convert: {relative_path}")
-            downscale_video(backup_path, video)
-        except Exception as e:
-            print(f"Failed to convert {relative_path}, restoring original.")
-            shutil.move(str(backup_path), str(video))  # Restore original if conversion fails
+    args_list = [(video, drive_path, backup_dir) for video in videos]
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        list(tqdm(executor.map(compress_and_replace, args_list), total=len(videos)))
 
 
 def main():
