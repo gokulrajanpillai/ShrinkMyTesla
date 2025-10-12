@@ -1,9 +1,11 @@
 import os
 import argparse
 from pathlib import Path
-from tqdm import tqdm
+try:
+    from tqdm import tqdm  # type: ignore
+except Exception:
+    tqdm = None  # type: ignore
 import shutil
-import ffmpeg  # Pythonic wrapper for FFmpeg
 
 TESLA_FOLDER_NAMES = [
     'TeslaCam',
@@ -24,8 +26,9 @@ def find_tesla_videos(drive_path):
 
 def downscale_video(input_path, output_path):
     """Downscale video to 720p using ffmpeg-python (no external exe path)."""
-    print("Downscaling video ...")
     try:
+        # Lazy import to avoid requiring ffmpeg for --help
+        import ffmpeg
         (
             ffmpeg
             .input(str(input_path))
@@ -59,23 +62,50 @@ def process_videos(drive_path, backup_dir):
         print("No Tesla videos found.")
         return
 
-    print(f"Found {len(videos)} video(s). Starting conversion...")
+    total = len(videos)
+    print(f"Found {total} video(s). Starting conversion...")
 
-    for video in tqdm(videos):
+    # Choose progress iterator
+    if tqdm:
+        iterator = tqdm(videos, total=total, unit="video", desc="Converting", dynamic_ncols=True, leave=True)
+    else:
+        iterator = enumerate(videos, start=1)
+
+    for item in iterator:
+        if tqdm:
+            video = item
+            idx = None
+        else:
+            idx, video = item
         relative_path = video.relative_to(drive_path)
         backup_path = backup_dir / relative_path
         backup_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Skip if already backed up (optional)
         if backup_path.exists():
-            print(f"Skipping (already backed up): {relative_path}")
+            if idx is not None:
+                print(f"[{idx}/{total}] Skipping (already backed up): {relative_path}")
+            else:
+                # Keep the bar concise and print the full message on a new line
+                iterator.set_postfix_str("skip", refresh=True)
+                tqdm.write(f"skip: {relative_path}")
             continue
 
         # Step 1: Move original to backup
+        if idx is not None:
+            print(f"[{idx}/{total}] Backing up: {relative_path}")
+        else:
+            iterator.set_postfix_str("backup", refresh=True)
+            tqdm.write(f"backup: {relative_path}")
         shutil.move(str(video), str(backup_path))
 
         # Step 2: Convert backup to HD and replace original path
         try:
+            if idx is not None:
+                print(f"[{idx}/{total}] Converting to HD: {relative_path}")
+            else:
+                iterator.set_postfix_str("convert", refresh=True)
+                tqdm.write(f"convert: {relative_path}")
             downscale_video(backup_path, video)
         except Exception as e:
             print(f"Failed to convert {relative_path}, restoring original.")
@@ -83,11 +113,29 @@ def process_videos(drive_path, backup_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="TeslaCam Video Downscaler to YouTube HD (720p) with Backup"
+    description = (
+        "Shrink My Tesla — safely shrink TeslaCam videos by downscaling them to a"
+        " smaller resolution (default 720p) to save space, while keeping a full"
+        " backup of originals in a separate folder. Use -p/--drive-path and -b/--backup-dir."
     )
-    parser.add_argument('--drive-path', required=True, help="Path to Tesla USB drive (e.g., /media/user/TESLACAM)")
-    parser.add_argument('--backup-dir', required=True, help="Directory to move original videos before replacing with HD versions")
+
+    epilog = (
+        "Examples:\n"
+        "  python shrink_my_tesla_cli.py -p /Volumes/TESLACAM -b ~/Backups/TeslaCam\n"
+        "  python shrink_my_tesla_cli.py --drive-path /Volumes/TESLACAM \\\n+    --backup-dir ~/Backups/TeslaCam\n\n"
+        "Notes:\n"
+        "- Originals are moved to the backup folder first, then converted back into\n"
+        "  the original locations. If anything fails, the original file is restored.\n"
+    )
+
+    parser = argparse.ArgumentParser(
+        description=description,
+        epilog=epilog,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+
+    parser.add_argument('-p', '--drive-path', required=True, help="Path to Tesla USB drive (e.g., /media/user/TESLACAM)")
+    parser.add_argument('-b', '--backup-dir', required=True, help="Directory to move original videos before replacing with HD versions")
     args = parser.parse_args()
 
     process_videos(args.drive_path, args.backup_dir)
