@@ -27,9 +27,16 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # --------------------------------------------------------------------
-# 📦 Node.js + npm 
+# 🚀 Install uv with pip and upper pin
 # --------------------------------------------------------------------
-# Add NodeSource repo (pinned at 20.x release line)
+# Ensure a modern pip, then install uv from PyPI with an upper pin for stability
+RUN python3 -m pip install --no-cache-dir --upgrade "pip>=23.3,<25" && \
+    python3 -m pip install --no-cache-dir "uv>=0.4.0,<0.5.0"
+
+# --------------------------------------------------------------------
+# 📦 Node.js and npm
+# --------------------------------------------------------------------
+# Add NodeSource repo pinned at 20.x release line
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get update && \
     apt-get install -y --no-install-recommends nodejs && \
@@ -37,11 +44,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     rm -rf /var/lib/apt/lists/*
 
 # --------------------------------------------------------------------
-# 🧰 Python packages
+# 🧰 Python packages via uv
 # --------------------------------------------------------------------
-## Copy your requirements to pip dependencies
-##COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir  ffmpeg-python tqdm imageio-ffmpeg
+# Copy only requirements first to leverage layer caching
+COPY requirements.txt /tmp/requirements.txt
+
+# Install into system site packages
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system -r /tmp/requirements.txt
 
 # --------------------------------------------------------------------
 # ⚙️ Node dependencies
@@ -52,7 +62,7 @@ WORKDIR /workspace
 RUN cd /tmp && npm install --omit=dev && rm -rf ~/.npm
 
 # --------------------------------------------------------------------
-# 👤 Non-root user (matches VSCode defaults)
+# 👤 Non root user that matches VS Code defaults
 # --------------------------------------------------------------------
 RUN useradd -ms /bin/bash vscode
 USER vscode
