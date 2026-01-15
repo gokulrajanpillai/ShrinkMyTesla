@@ -26,8 +26,5 @@ jobs:
             python -m pip install pytest
             python -m pytest
           else
-            python - <<'PY'
-            import shrinkmytesla
-            print(shrinkmytesla.__version__)
-            PY
+            python -c "import shrinkmytesla; print(shrinkmytesla.__version__)"
           fi
