@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: ["release/**"]
+    tags: ["v*"]
   workflow_dispatch:
 
 jobs:
@@ -21,5 +21,37 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install build
           python -m build
+      - name: Prepare release notes
+        run: |
+          python - <<'PY'
+          import pathlib
+          import re
+          
+          changelog = pathlib.Path("CHANGELOG.md").read_text(encoding="utf-8")
+          tag = "${{ github.ref_name }}"
+          version = tag[1:] if tag.startswith("v") else tag
+          pattern = rf"^##\\s+{re.escape(version)}\\s*$"
+          lines = changelog.splitlines()
+          start = None
+          for i, line in enumerate(lines):
+            if re.match(pattern, line):
+              start = i + 1
+              break
+          if start is None:
+            raise SystemExit(f"Version {version} not found in CHANGELOG.md")
+          end = len(lines)
+          for i in range(start, len(lines)):
+            if lines[i].startswith("## "):
+              end = i
+              break
+          body = "\n".join(lines[start:end]).strip() or f"Release {version}"
+          pathlib.Path("release-notes.txt").write_text(body, encoding="utf-8")
+          PY
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@v1.8.14
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.txt

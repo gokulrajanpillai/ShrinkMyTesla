@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## 2026.01
 - Added MIT license.
 - Added the initial Python CLI to scan and shrink TeslaCam videos.
 - Created devcontainer support, including host SSH mounting and OpenSSH client setup.
