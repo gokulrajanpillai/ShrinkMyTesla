@@ -1,8 +1,8 @@
-name: CI - PR
+name: Main
 
 on:
-  pull_request:
-    branches: ["main", "develop"]
+  push:
+    branches: ["main"]
 
 jobs:
   build-test:

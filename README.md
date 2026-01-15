@@ -3,7 +3,7 @@
 **ShrinkMyTesla** is a CLI tool that automatically **compresses and cleans Tesla Dashcam & Sentry Mode videos**.  
 Keep the important footage, lose the unnecessary gigabytes.
 
-[![CI - Main](https://github.com/gokulrajanpillai/ShrinkMyTesla/actions/workflows/ci-main.yml/badge.svg?branch=main)](https://github.com/gokulrajanpillai/ShrinkMyTesla/actions/workflows/ci-main.yml)
+[![Main](https://github.com/gokulrajanpillai/ShrinkMyTesla/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/gokulrajanpillai/ShrinkMyTesla/actions/workflows/main.yml)
 
 ### 🧠 Why it exists
 Tesla’s built-in dashcam records in high-bitrate MP4 files across four cameras.  
