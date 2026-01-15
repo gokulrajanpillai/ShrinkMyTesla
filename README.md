@@ -3,6 +3,9 @@
 **ShrinkMyTesla** is a desktop and CLI tool that automatically **compresses and cleans Tesla Dashcam & Sentry Mode videos**.  
 Keep the important footage, lose the unnecessary gigabytes.
 
+![Main branch: stable](https://img.shields.io/badge/main-stable-2ea44f)
+![UI: work in progress](https://img.shields.io/badge/ui-work_in_progress-f0ad4e)
+
 ### 🧠 Why it exists
 Tesla’s built-in dashcam records in high-bitrate MP4 files across four cameras.  
 A single day of driving can fill your USB or SSD. ShrinkMyTesla reduces video size by up to **70%**, while keeping license-plate-level clarity.
@@ -18,9 +21,13 @@ A single day of driving can fill your USB or SSD. ShrinkMyTesla reduces video si
 Built with **Electron + FFmpeg + Node.js**, designed for privacy and local processing.  
 No uploads, no accounts, no data leaves your drive.
 
+### Project layout
+- UI (work in progress): `ui/` (Electron app shell + renderer)
+- CLI (first productive version): `src/shrink_my_tesla_cli.py` and `src/shrinkmytesla/` library
+
 ### 🪄 Example use (CLI)
 ```bash
-python shrink_my_tesla_cli.py --drive-path /Volumes/TESLADRIVE --backup-dir "$HOME/TeslaBackups"
+python src/shrink_my_tesla_cli.py --drive-path /Volumes/TESLADRIVE --backup-dir "$HOME/TeslaBackups"
 ```
 
 CLI (Python) quick start
@@ -31,10 +38,10 @@ CLI (Python) quick start
 	```
 - Linux example:
 	```bash
-	python shrink_my_tesla_cli.py --drive-path /media/$USER/TESLACAM --backup-dir "$HOME/TeslaBackups"
+	python src/shrink_my_tesla_cli.py --drive-path /media/$USER/TESLACAM --backup-dir "$HOME/TeslaBackups"
 	```
 - Windows (PowerShell):
 	```powershell
-	python .\shrink_my_tesla_cli.py --drive-path E:\ --backup-dir D:\TeslaBackups
+	python .\src\shrink_my_tesla_cli.py --drive-path E:\ --backup-dir D:\TeslaBackups
 	```
 - Note: Scans TeslaCam/RecentClips, SavedClips, SentryClips; moves originals to the backup dir and writes 720p H.264 files back in place.
