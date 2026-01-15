@@ -1,10 +1,9 @@
 # ShrinkMyTesla 🚗💨
 
-**ShrinkMyTesla** is a desktop and CLI tool that automatically **compresses and cleans Tesla Dashcam & Sentry Mode videos**.  
+**ShrinkMyTesla** is a CLI tool that automatically **compresses and cleans Tesla Dashcam & Sentry Mode videos**.  
 Keep the important footage, lose the unnecessary gigabytes.
 
 ![Main branch: stable](https://img.shields.io/badge/main-stable-2ea44f)
-![UI: work in progress](https://img.shields.io/badge/ui-work_in_progress-f0ad4e)
 
 ### 🧠 Why it exists
 Tesla’s built-in dashcam records in high-bitrate MP4 files across four cameras.  
@@ -18,11 +17,10 @@ A single day of driving can fill your USB or SSD. ShrinkMyTesla reduces video si
 - 💻 Works offline — Windows, macOS, and Linux  
 
 ### 🧰 Tech
-Built with **Electron + FFmpeg + Node.js**, designed for privacy and local processing.  
+Built with **Python + FFmpeg**, designed for privacy and local processing.  
 No uploads, no accounts, no data leaves your drive.
 
 ### Project layout
-- UI (work in progress): `ui/` (Electron app shell + renderer)
 - CLI (first productive version): `src/shrink_my_tesla_cli.py` and `src/shrinkmytesla/` library
 
 ### 🪄 Example use (CLI)
