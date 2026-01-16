@@ -49,6 +49,24 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install build
           python -m build
+      - name: Inspect build metadata
+        run: |
+          ls -la dist
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+
+          wheels = list(Path("dist").glob("*.whl"))
+          if not wheels:
+              raise SystemExit("No wheel found in dist/")
+          for wheel in wheels:
+              print(f"== {wheel.name} ==")
+              with zipfile.ZipFile(wheel) as zf:
+                  meta_files = [n for n in zf.namelist() if n.endswith("METADATA")]
+                  for name in meta_files:
+                      print(f"-- {name} --")
+                      print(zf.read(name).decode("utf-8", errors="replace"))
+          PY
       - name: Prepare release notes
         run: |
           python - <<'PY'
