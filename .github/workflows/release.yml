@@ -55,18 +55,42 @@ jobs:
           import pathlib
           import re
           
-          changelog = pathlib.Path("CHANGELOG.md").read_text(encoding="utf-8")
+          changelog_path = pathlib.Path("CHANGELOG.md")
+          print(f"changelog_path={changelog_path}")
+          print(f"changelog_exists={changelog_path.exists()}")
+          try:
+            changelog = changelog_path.read_text(encoding="utf-8")
+            print(f"changelog_length={len(changelog)}")
+          except Exception as exc:
+            raise SystemExit(f"Failed to read CHANGELOG.md: {exc}")
           tag = "${{ github.ref_name }}"
           version = tag[1:] if tag.startswith("v") else tag
-          pattern = rf"^##\\s+{re.escape(version)}\\s*$"
+          variants = {version}
+          if version.count(".") == 1:
+            parts = version.split(".")
+            variants.add(f"{parts[0]}.{int(parts[1])}")
+          print(f"tag={tag}")
+          print(f"version={version}")
+          print(f"variants={sorted(variants)}")
+          headings = []
           lines = changelog.splitlines()
+          print(f"lines_count={len(lines)}")
+          for line in lines:
+            if line.startswith("## "):
+              headings.append(line.strip())
           start = None
           for i, line in enumerate(lines):
-            if re.match(pattern, line):
+            if not line.startswith("## "):
+              continue
+            heading = line.strip()[3:]
+            if heading in variants:
               start = i + 1
               break
           if start is None:
-            raise SystemExit(f"Version {version} not found in CHANGELOG.md")
+            raise SystemExit(
+              f"Version {version} not found in CHANGELOG.md. "
+              f"Found headings: {', '.join(headings)}"
+            )
           end = len(lines)
           for i in range(start, len(lines)):
             if lines[i].startswith("## "):
