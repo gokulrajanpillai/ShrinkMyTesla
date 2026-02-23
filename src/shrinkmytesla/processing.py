@@ -7,9 +7,6 @@ from tqdm import tqdm
 
 TESLA_FOLDER_NAMES = [
     "TeslaCam",
-    "TeslaCam/RecentClips",
-    "TeslaCam/SavedClips",
-    "TeslaCam/SentryClips",
 ]
 
 
@@ -46,7 +43,7 @@ def downscale_video(input_path, output_path):
         "copy",
         str(output_path),
     ]
-    print("Downscaling video ...")
+    tqdm.write("Downscaling video ...")
     try:
         subprocess.run(
             cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
@@ -79,10 +76,10 @@ def process_videos(drive_path, backup_dir):
             print(f"Skipping (already backed up): {relative_path}")
             continue
 
-        shutil.move(str(video), str(backup_path))
+        shutil.move(video, backup_path)
 
         try:
             downscale_video(backup_path, video)
         except subprocess.CalledProcessError:
-            print(f"Failed to convert {relative_path}, restoring original.")
-            shutil.move(str(backup_path), str(video))
+            tqdm.write(f"Failed to convert {relative_path}, restoring original.")
+            shutil.move(backup_path, video)

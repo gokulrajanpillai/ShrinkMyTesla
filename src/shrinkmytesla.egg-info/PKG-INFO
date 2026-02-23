@@ -1,3 +1,13 @@
+Metadata-Version: 2.4
+Name: shrinkmytesla
+Version: 2026.1
+Summary: TeslaCam video shrinker
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: tqdm
+Dynamic: license-file
+
 # ShrinkMyTesla 🚗💨
 
 **ShrinkMyTesla** is a CLI tool that automatically **compresses and cleans Tesla Dashcam & Sentry Mode videos**.  
@@ -42,4 +52,4 @@ CLI (Python) quick start
 	```powershell
 	python .\src\shrink_my_tesla_cli.py --drive-path E:\ --backup-dir D:\TeslaBackups
 	```
-- Note: Recursively scans the TeslaCam folder (including RecentClips, SavedClips, SentryClips); moves originals to the backup dir and writes 720p H.264 files back in place.
+- Note: Scans TeslaCam/RecentClips, SavedClips, SentryClips; moves originals to the backup dir and writes 720p H.264 files back in place.

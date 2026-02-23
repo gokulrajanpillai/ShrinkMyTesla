@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+src/shrinkmytesla/__init__.py
+src/shrinkmytesla/processing.py
+src/shrinkmytesla.egg-info/PKG-INFO
+src/shrinkmytesla.egg-info/SOURCES.txt
+src/shrinkmytesla.egg-info/dependency_links.txt
+src/shrinkmytesla.egg-info/requires.txt
+src/shrinkmytesla.egg-info/top_level.txt
+tests/test_processing.py

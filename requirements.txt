@@ -1,4 +1,1 @@
 tqdm>=4.66.0
-ffmpeg-python
-tqdm
-imageio-ffmpeg

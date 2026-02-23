@@ -1,5 +1,7 @@
 import argparse
+
 from shrinkmytesla.processing import process_videos
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -20,6 +22,7 @@ def main():
     args = parser.parse_args()
 
     process_videos(args.drive_path, args.backup_dir)
+
 
 if __name__ == '__main__':
     main()
