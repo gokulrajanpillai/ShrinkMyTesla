@@ -42,4 +42,4 @@ CLI (Python) quick start
 	```powershell
 	python .\src\shrink_my_tesla_cli.py --drive-path E:\ --backup-dir D:\TeslaBackups
 	```
-- Note: Scans TeslaCam/RecentClips, SavedClips, SentryClips; moves originals to the backup dir and writes 720p H.264 files back in place.
+- Note: Recursively scans the TeslaCam folder (including RecentClips, SavedClips, SentryClips); moves originals to the backup dir and writes 720p H.264 files back in place.
